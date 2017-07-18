@@ -1,0 +1,41 @@
+version: '2'
+services:
+   elasticsearch:
+     container_name: elasticsearch
+     build: elasticsearch/
+     ports:
+      - "9200:9200"
+      - "9300:9300"
+     volumes:
+      - "./elasticsearch/data:/usr/share/elasticsearch/data"
+     environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+     networks:
+      - elk
+
+   logstash:
+    container_name: logstash
+    build: logstash/
+    volumes:
+     - "./logstash/conf.d:/etc/logstash/conf.d"
+     - "./logstash/data/log:/host/var/log"
+    networks:
+     - elk
+    depends_on:
+     - elasticsearch
+    ports:
+     - "5000:5000"
+
+   kibana:
+    container_name: kibana
+    build: kibana/
+    networks:
+     - elk
+    depends_on:
+     - elasticsearch
+    ports:
+     - "5601:5601"
+
+networks:
+  elk:
+   driver: bridge
